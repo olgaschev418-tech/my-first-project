@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Создай друга. Обучи ИИ. Стань хранителем искр. Учебная игра на Scratch 3.">
+  <title>MONSTER AI LAB · Академия монстров</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/svg+xml" href="game/pet.svg">
+</head>
+<body>
+<header><a class="brand" href="#"><span class="brand-icon">✦</span> AI GAME LAB <small>АКАДЕМИЯ МОНСТРОВ</small></a><div class="file-actions"><label class="download file-label">↑ Открыть свой .sb3<input id="project-file" type="file" accept=".sb3" hidden></label><a class="download" href="game/Monster_AI_Lab.sb3" download>↓ Проект Scratch</a></div></header>
+<main>
+  <section class="intro"><div class="eyebrow"><span class="dot"></span> МАЛЕНЬКИЙ МОНСТР. БОЛЬШОЕ ПРИКЛЮЧЕНИЕ.</div><h1>Твой друг.<br>Твоя <em>суперсила.</em></h1><p>Вырасти Искрика, научись побеждать вместе<br class="desktop"> и управляй магией одним движением руки.</p><div class="pills"><span>8–12 лет</span><span>Настоящий Scratch 3</span><span>ИИ на твоём устройстве</span></div></section>
+  <div class="workspace">
+    <section class="game-card" aria-label="Игра">
+      <div class="card-heading"><div><span class="dot"></span><strong id="scene-label">Лаборатория Искрика</strong></div><div class="top-actions"><button id="sound" title="Включить звуки" aria-pressed="false">Звук: выкл.</button><button id="restart">↻ Сначала</button><button id="fullscreen" title="Развернуть игру">⛶</button></div></div>
+      <div id="stage-wrap"><canvas id="stage" width="960" height="720" tabindex="0" aria-label="Игровая сцена. Управление кнопками или клавиатурой"></canvas><div id="monitors" aria-hidden="true"></div><div id="loading">Пробуждаем Искрика…</div><div id="ask" hidden><label id="question" for="answer"></label><form id="answer-form"><input id="answer" maxlength="24" autocomplete="off"><button>Готово</button></form></div></div>
+      <div class="game-status"><div><strong id="mission">Задание 01 / Познакомьтесь</strong><p id="hint" aria-live="polite">Покорми Искрика, проведи пять тренировок и отправляйся на арену.</p></div><span class="badge" id="round">01 / 03</span></div>
+      <div class="actions" id="room-actions"><button data-key="f">🍓 <strong>Кормить</strong><small>+20 энергии</small></button><button data-key="t">✦ <strong>Тренировать</strong><small>−10 энергии · +10 опыта</small></button><button data-key="r">☾ <strong>Отдыхать</strong><small>Полное восстановление</small></button><button data-key="b" class="primary">➜ <strong>На арену</strong><small>Встретить соперника</small></button></div>
+      <div class="actions" id="battle-actions" hidden><button data-key="a">✊ <strong>Атака</strong><small>−8 энергии</small></button><button data-key="d">✋ <strong>Щит</strong><small>+18 энергии · урон 3</small></button><button data-key="h">✌ <strong>Лечение</strong><small>−20 энергии · +30 HP</small></button><button data-key="q">⌂ <strong>Домой</strong><small>Можно отступить</small></button></div>
+      <div id="result" hidden><h2 id="result-title"></h2><p id="result-text"></p><button data-key="q" class="primary">Вернуться в лабораторию</button></div>
+    </section>
+    <aside class="ai-card"><div class="eyebrow">ТВОЯ СУПЕРСИЛА</div><h2>Магия жестов <span>ИИ</span></h2><p class="muted">Покажи жест. Нейросеть найдёт руку, а Искрик выполнит команду.</p><div class="camera"><video id="camera" autoplay muted playsinline></video><canvas id="landmarks"></canvas><div id="camera-placeholder"><span>✋</span><strong>Здесь появится твоя рука</strong><small>Камера включается только по кнопке</small></div></div><p id="ai-status" role="status">Модель уже в комплекте. Интернет для камеры не нужен.</p><button id="camera-toggle" class="primary wide">Включить камеру и ИИ</button><div class="gesture-list"><div><span>✊</span><strong>Кулак</strong><small>Атака</small></div><div><span>✋</span><strong>Ладонь</strong><small>Щит</small></div><div><span>✌</span><strong>Два пальца</strong><small>Лечение</small></div></div><div class="privacy">◉ Видео обрабатывается здесь и никуда не отправляется. После команды убери руку из кадра.</div>
+      <details id="learning"><summary>Лаборатория обучения <span>＋</span></summary><p class="muted">Научи игру своим жестам: запиши минимум 5 разных примеров каждой команды. Меняй положение руки, а не только повторяй один кадр.</p><div class="samples"><button data-sample="attack">✊ Атака <b id="count-attack">0</b></button><button data-sample="defend">✋ Щит <b id="count-defend">0</b></button><button data-sample="heal">✌ Лечение <b id="count-heal">0</b></button></div><label class="check"><input type="checkbox" id="custom-model"> Использовать мои примеры (kNN)</label><p id="training-status" role="status">Примеры хранятся только до закрытия страницы.</p><button id="clear-samples" class="text-button">Очистить примеры</button></details>
+    </aside>
+  </div>
+  <section class="journey"><div><span>01</span><h3>Подружись</h3><p>Еда даёт энергию, отдых восстанавливает силы. Нажми на питомца — выбери цвет.</p></div><div><span>02</span><h3>Потренируйся</h3><p>Пять тренировок — новый уровень. Сила делает атаки мощнее. Проверяй свои гипотезы!</p></div><div><span>03</span><h3>Удиви себя</h3><p>Победи трёх соперников. Перед мощным ударом используй щит — стратегия важнее скорости.</p></div></section>
+  <footer>Создано для любопытных. <strong>Ошибаться — тоже учиться.</strong><span>Клавиши: F · T · R · B / A · D · H · Q / N — имя</span></footer>
+</main>
+<script src="vendor/scratch-storage.js"></script><script src="vendor/scratch-render.js"></script><script src="vendor/scratch-vm.js"></script><script src="vendor/hands/hands.js"></script><script type="module" src="app.js"></script>
+</body></html>

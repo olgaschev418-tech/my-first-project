@@ -1,0 +1,23 @@
+{
+  "name": "monster-ai-lab",
+  "version": "1.0.0",
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "description": "Учебная Scratch-игра с локальным распознаванием жестов",
+  "scripts": {
+    "build": "python3 tools/build_project.py && node tools/vendor.cjs",
+    "start": "node tools/serve.cjs",
+    "test": "node tests/game.cjs",
+    "test:browser": "node tests/browser.cjs",
+    "package": "npm run build && python3 tools/package_classroom.py"
+  },
+  "dependencies": {
+    "@mediapipe/hands": "0.4.1675469240",
+    "scratch-render": "2.2.84",
+    "scratch-storage": "6.2.1",
+    "scratch-vm": "5.0.300"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

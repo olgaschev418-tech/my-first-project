@@ -1,0 +1,5 @@
+node_modules/
+web/vendor/
+web/chunks/
+test-results/
+__pycache__/
