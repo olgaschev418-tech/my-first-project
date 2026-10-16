@@ -1,0 +1,29 @@
+test_invalid (test_lab2.BookTests.test_invalid) ... ok
+test_operations (test_lab2.BookTests.test_operations) ... ok
+test_reading_and_call (test_lab2.BookTests.test_reading_and_call) ... ok
+test_empty (test_lab2.EnsembleTests.test_empty) ... ok
+test_invalid (test_lab2.EnsembleTests.test_invalid) ... ok
+test_removal (test_lab2.EnsembleTests.test_removal) ... ok
+test_selection (test_lab2.EnsembleTests.test_selection) ... ok
+test_totals (test_lab2.EnsembleTests.test_totals) ... ok
+test_area_and_tiles (test_lab2.FloorTests.test_area_and_tiles) ... ok
+test_full_exclusion (test_lab2.FloorTests.test_full_exclusion) ... ok
+test_invalid (test_lab2.FloorTests.test_invalid) ... ok
+test_recalculation (test_lab2.FloorTests.test_recalculation) ... ok
+test_convergence_and_call (test_lab2.LossTests.test_convergence_and_call) ... ok
+test_invalid (test_lab2.LossTests.test_invalid) ... ok
+test_operations (test_lab2.LossTests.test_operations) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.001s
+
+OK
+
+Консольные проверки:
+task1_floor.py: PASS; проверено «Количество плиток: 117 шт.»
+task2_book.py: PASS; проверено «Для прочтения 300 страниц потребуется 10 часов»
+task3_ensemble.py: PASS; проверено «Общее время обучения: 25 мин»
+task4_loss.py: PASS; проверено «Потери уменьшились относительно второго значения: да»
+task1_floor.py: PASS; проверено «Ошибка:»
+task2_book.py: PASS; проверено «Ошибка:»
+task4_loss.py: PASS; проверено «Деление: ошибка — Деление на ноль»
