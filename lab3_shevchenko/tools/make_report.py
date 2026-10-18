@@ -1,4 +1,4 @@
-"""Сборка отчёта по титульному листу и стилям лабораторной № 2."""
+"""Сборка отчёта с точными абзацными параметрами Proga_otchet.docx."""
 import argparse
 from copy import deepcopy
 from pathlib import Path
@@ -10,74 +10,80 @@ from docx.oxml.ns import qn
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT = (ROOT.parent / 'lab2_shevchenko'
-           / 'ЛР2_Шевченко_ОН_вариант_2.docx')
+DEFAULT = ROOT / 'templates' / 'report_format.docx'
 parser = argparse.ArgumentParser()
 parser.add_argument('--template', type=Path, default=DEFAULT)
 args = parser.parse_args()
 doc = Document(args.template)
 paragraphs = list(doc.paragraphs)
-body_properties = deepcopy(paragraphs[42]._p.pPr)
-code_example = next(p for p in paragraphs if any(
-    r.font.name == 'Courier New' for r in p.runs))
-code_properties = deepcopy(code_example._p.pPr)
-caption_example = next(p for p in paragraphs
-                       if p.text.startswith('Рисунок 1 –'))
-caption_properties = deepcopy(caption_example._p.pPr)
+# These Word properties and spacer paragraphs are copied from Proga_otchet.docx.
+roles = {p.text[1:]: deepcopy(p._p.pPr) for p in paragraphs
+         if p.text.startswith('@')}
 
-# Preserve the existing title page, personal data, margins and Word styles.
-for index, text in [(14, 'ЛАБОРАТОРНАЯ РАБОТА №3'),
-                    (16, 'Тема: «МНОЖЕСТВЕННОЕ НАСЛЕДОВАНИЕ»')]:
+for index, content in [
+        (14, 'ЛАБОРАТОРНАЯ РАБОТА №3'),
+        (16, 'Тема: «МНОЖЕСТВЕННОЕ НАСЛЕДОВАНИЕ»'),
+        (23, 'Направленность (профиль)\t Искусственный интеллект и '
+             'математическое моделирование'),
+        (28, 'Обучающаяся\t\t             _____________________       '
+             'Шевченко О.Н.')]:
     p = paragraphs[index]
-    formatting = deepcopy(p.runs[0]._r.rPr)
+    formatting = deepcopy(p.runs[0]._r.rPr) if p.runs else None
     p.clear()
-    r = p.add_run(text)
+    r = p.add_run(content)
     if formatting is not None:
         r._r.insert(0, formatting)
-for paragraph in paragraphs[42:]:
+for paragraph in paragraphs[43:]:
     paragraph._p.getparent().remove(paragraph._p)
 
 
-def text(content, bold=False, kind='body'):
+def paragraph(role):
     p = doc.add_paragraph()
-    properties = {'body': body_properties, 'code': code_properties,
-                  'caption': caption_properties}[kind]
-    p._p.insert(0, deepcopy(properties))
+    p._p.insert(0, deepcopy(roles[role]))
+    return p
+
+
+def gap(role, keep=False):
+    p = paragraph(role)
+    if keep:
+        p.paragraph_format.keep_with_next = True
+    return p
+
+
+def text(content, bold=False, kind='body'):
+    p = paragraph(kind)
     r = p.add_run(content)
     r.font.name = 'Courier New' if kind == 'code' else 'Times New Roman'
     r.font.size = Pt(12 if kind == 'code' else 14)
     r.bold = bold
-    pf = p.paragraph_format
-    pf.widow_control = True
+    if kind in ('body', 'conclusion'):
+        p.paragraph_format.widow_control = True
     if kind == 'code':
-        pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        pf.first_line_indent = Cm(0)
-        pf.left_indent = Cm(0)
-        pf.line_spacing = 1
-        pf.space_before = Pt(0)
-        pf.space_after = Pt(0)
+        # Keep source indentation and the sample's single line spacing.
         if content.rstrip().endswith(':') or content.lstrip().startswith('@'):
-            pf.keep_with_next = True
+            p.paragraph_format.keep_with_next = True
     return p
 
 
 def heading(content, centered=False):
-    p = text(content, bold=True)
+    if doc.paragraphs[-1].text.strip():
+        gap('work_before' if centered else 'heading_before')
+    p = paragraph('work_heading' if centered else 'heading')
+    r = p.add_run(content)
+    r.font.name = 'Times New Roman'
+    r.font.size = Pt(14)
+    r.bold = True
     p.paragraph_format.keep_with_next = True
-    if centered:
-        p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.first_line_indent = Cm(0)
+    gap('work_after' if centered else 'heading_after', keep=True)
     return p
 
 
 def figure(number, caption, width=16, height=19):
     path = ROOT / 'assets' / f'figure{number}.png'
     w, h = Image.open(path).size
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    role = 'image' if number in (1, 3, 5, 6, 11) else 'diagram'
+    p = paragraph(role)
     p.paragraph_format.keep_with_next = True
-    p.paragraph_format.space_before = Pt(8)
-    p.paragraph_format.space_after = Pt(0)
     r = p.add_run()
     r.add_picture(str(path), width=Cm(min(width, height * w / h)))
     r._r.xpath('.//wp:docPr')[0].set('descr', caption)
@@ -85,28 +91,28 @@ def figure(number, caption, width=16, height=19):
 
 
 def listing(number, filename):
-    p = text(f'Листинг {number} – Код программы')
-    p.paragraph_format.first_line_indent = Cm(0)
+    gap('listing_before')
+    p = text(f'Листинг {number} – Код программы', kind='listing')
     p.paragraph_format.keep_with_next = True
     for index, line in enumerate((ROOT / 'programs' / filename).read_text(
             encoding='utf-8').splitlines()):
         p = text(line, kind='code')
         if index < 4:
             p.paragraph_format.keep_with_next = True
-    doc.add_paragraph()
+    gap('listing_after')
 
 
-p = doc.add_paragraph()
-p._p.insert(0, deepcopy(body_properties))
+p = paragraph('goal')
 p.paragraph_format.page_break_before = True
 p.add_run('Цель работы: ').bold = True
 p.add_run('освоить принципы множественного наследования в Python, понять '
           'механизм MRO (Method Resolution Order), научиться проектировать '
           'классы с использованием нескольких родительских классов и '
           'разрешать потенциальные конфликты методов.')
-for r in p.runs:
+for index, r in enumerate(p.runs):
     r.font.name = 'Times New Roman'
     r.font.size = Pt(14)
+    r.bold = index == 0
 heading('Задание')
 text('1. Написать классы по описанию варианта 2 «Сотрудники компании». '
      'Базовый Employee содержит уникальный id. Классы ManagerSkills и '
@@ -310,6 +316,7 @@ text('Для воспроизведения из каталога lab3_shevchenk
      'python3 -m unittest discover -s programs -v. '
      'Программы используют только стандартную библиотеку Python; '
      'установка ML-фреймворков не требуется.')
+gap('conclusion_before')
 p = text('Вывод: я освоила принципы множественного наследования в Python, '
          'изучила механизм MRO и работу super(). Реализовала классы '
          'сотрудников и слоёв нейросети для второго варианта, '
@@ -320,7 +327,7 @@ p = text('Вывод: я освоила принципы множественн�
          'одноимённых методов и предотвращать повторную инициализацию '
          'общего предка. Построила UML-диаграммы классов и '
          'последовательности, проверила решения контрольными '
-         'примерами и автоматическими тестами.')
+         'примерами и автоматическими тестами.', kind='conclusion')
 
 used = set()
 for element in doc._element.iter():
