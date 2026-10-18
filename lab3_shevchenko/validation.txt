@@ -1,0 +1,27 @@
+test_cache_hit_and_invalidation (test_lab3.CoreTests.test_cache_hit_and_invalidation) ... ok
+test_data_validation_and_atomic_update (test_lab3.CoreTests.test_data_validation_and_atomic_update) ... ok
+test_end_to_end_json_export (test_lab3.CoreTests.test_end_to_end_json_export) ... ok
+test_fit_predict_and_tie (test_lab3.CoreTests.test_fit_predict_and_tie) ... ok
+test_incompatible_mro_is_rejected (test_lab3.CoreTests.test_incompatible_mro_is_rejected) ... ok
+test_invalid_calls (test_lab3.CoreTests.test_invalid_calls) ... ok
+test_mro_and_single_initialization (test_lab3.CoreTests.test_mro_and_single_initialization) ... ok
+test_roi_and_interpretation (test_lab3.CoreTests.test_roi_and_interpretation) ... ok
+test_tuning_with_held_out_points (test_lab3.CoreTests.test_tuning_with_held_out_points) ... ok
+test_unique_id_and_metadata (test_lab3.CoreTests.test_unique_id_and_metadata) ... ok
+test_explicit_resolution (test_lab3.EmployeeTests.test_explicit_resolution) ... ok
+test_left_parent_and_reversed_order (test_lab3.EmployeeTests.test_left_parent_and_reversed_order) ... ok
+test_work_and_mixed_group (test_lab3.EmployeeTests.test_work_and_mixed_group) ... ok
+test_passes_and_inheritance (test_lab3.LayerTests.test_passes_and_inheritance) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.002s
+
+OK
+
+Отдельные консольные запуски:
+task1_employees.py: PASS, результат совпадает с протоколом
+task2_layers.py: PASS, результат совпадает с протоколом
+analytics_core.py: PASS, результат совпадает с протоколом
+JSON: PASS, прогноз 450, ROI 50 %
+Word: PASS, все 3 листинга точно соответствуют исходникам; 11 иллюстраций и логотип
+PDF: PASS, 21 страниц; личные данные, новая тема, границы текста и рисунков

@@ -1,0 +1,7 @@
+Слои нейросети
+Dense: 1-й прямой проход
+Dense: 1-й обратный проход
+MRO: Dense -> Layer -> DenseLayer -> object
+Conv: 2-й прямой проход
+Conv: 2-й обратный проход
+MRO: Conv -> Layer -> ConvolutionalLayer -> object

@@ -1,0 +1,16 @@
+digraph G { graph [rankdir=BT, bgcolor="white", pad="0.15", nodesep="0.25", ranksep="0.6"]; node [shape=plain, fontname="DejaVu Sans", fontsize=12]; edge [arrowhead=empty, arrowsize=1.2];
+e [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Employee</B></TD></TR><HR/><TR><TD ALIGN="LEFT">- _ids: Iterator[int]</TD></TR><TR><TD ALIGN="LEFT">+ id: int</TD></TR><HR/><TR><TD ALIGN="LEFT">+ __init__(): None</TD></TR></TABLE>>];
+m [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>ManagerSkills</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ work(): str</TD></TR></TABLE>>];
+d [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>DeveloperSkills</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ work(): str</TD></TR></TABLE>>];
+manager [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Manager</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD> </TD></TR></TABLE>>];
+developer [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Developer</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD> </TD></TR></TABLE>>];
+lead [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>TeamLead</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ work(): str</TD></TR></TABLE>>];
+manager -> e;
+manager -> m;
+developer -> e;
+developer -> d;
+lead -> e;
+lead -> m;
+lead -> d;
+
+}

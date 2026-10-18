@@ -1,0 +1,5 @@
+digraph G { graph [rankdir=BT, bgcolor="white", pad="0.15", nodesep="0.25", ranksep="0.6"]; node [shape=plain, fontname="DejaVu Sans", fontsize=12]; edge [arrowhead=empty, arrowsize=1.2];
+v [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>ValidationMixin</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ validate_number(value: int | float): float</TD></TR><TR><TD ALIGN="LEFT">+ validate_data(xs: list, ys: list): tuple[list, list]</TD></TR></TABLE>>];
+c [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>CachingMixin</B></TD></TR><HR/><TR><TD ALIGN="LEFT">- _cache: dict</TD></TR><HR/><TR><TD ALIGN="LEFT">+ __init__(**kwargs): None</TD></TR><TR><TD ALIGN="LEFT">+ cached(key: tuple, operation: Callable): float</TD></TR></TABLE>>];
+{ rank=same; v; c; }
+}

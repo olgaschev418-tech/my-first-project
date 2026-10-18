@@ -1,0 +1,53 @@
+MLModel, прогноз для 2: 200.0
+EconomicIndicator, ROI: 50.0
+MRO HybridAnalyzer:
+  HybridAnalyzer
+  MLModel
+  EconomicIndicator
+  ValidationMixin
+  CachingMixin
+  LoggingMixin
+  ReportMixin
+  BaseComponent
+  object
+Завершение конструкторов (без повторов):
+  BaseComponent
+  LoggingMixin
+  CachingMixin
+  EconomicIndicator
+  MLModel
+  HybridAnalyzer
+super(): Компонент 3 / EconomicIndicator / MLModel / HybridAnalyzer
+Подбор k по LOO MSE:
+  k=1: MSE=10000.00
+  k=2: MSE=9000.00
+  k=3: MSE=18666.67
+Выбрано k = 2
+Метрики на обучающих данных: {'MAE': 50.0, 'RMSE': 50.0}
+Повторный прогноз (кэш): 450.0
+JSON-отчёт:
+{
+  "id": 3,
+  "metadata": {
+    "author": "Шевченко О.Н."
+  },
+  "k": 2,
+  "predicted_revenue": 450.0,
+  "cost": 300,
+  "ROI_percent": 50.0,
+  "interpretation": "Прибыль"
+}
+Журнал:
+  load data
+  fit k=2
+  tune k=2
+  cache miss
+  cache miss
+  cache miss
+  cache miss
+  cache miss
+  cache miss
+  calculate ROI
+  cache hit
+  export JSON
+Обработано исключение: Затраты равны нулю

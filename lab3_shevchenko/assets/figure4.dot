@@ -1,0 +1,12 @@
+digraph G { graph [rankdir=BT, bgcolor="white", pad="0.15", nodesep="0.25", ranksep="0.6"]; node [shape=plain, fontname="DejaVu Sans", fontsize=12]; edge [arrowhead=empty, arrowsize=1.2];
+l [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Layer</B></TD></TR><HR/><TR><TD ALIGN="LEFT">- _ids: Iterator[int]</TD></TR><TR><TD ALIGN="LEFT">+ id: int</TD></TR><HR/><TR><TD ALIGN="LEFT">+ __init__(): None</TD></TR></TABLE>>];
+d [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>DenseLayer</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ forward(): str</TD></TR><TR><TD ALIGN="LEFT">+ backward(): str</TD></TR></TABLE>>];
+c [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>ConvolutionalLayer</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ forward(): str</TD></TR><TR><TD ALIGN="LEFT">+ backward(): str</TD></TR></TABLE>>];
+dense [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Dense</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD> </TD></TR></TABLE>>];
+conv [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>Conv</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD> </TD></TR></TABLE>>];
+dense -> l;
+dense -> d;
+conv -> l;
+conv -> c;
+
+}

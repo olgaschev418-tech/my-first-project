@@ -1,0 +1,5 @@
+digraph G { graph [rankdir=BT, bgcolor="white", pad="0.15", nodesep="0.25", ranksep="0.6"]; node [shape=plain, fontname="DejaVu Sans", fontsize=12]; edge [arrowhead=empty, arrowsize=1.2];
+l [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>LoggingMixin</B></TD></TR><HR/><TR><TD ALIGN="LEFT">+ events: list[str]</TD></TR><HR/><TR><TD ALIGN="LEFT">+ __init__(**kwargs): None</TD></TR><TR><TD ALIGN="LEFT">+ log(message: str): None</TD></TR></TABLE>>];
+r [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>ReportMixin</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ export_report(report: dict, path: str | Path | None): str</TD></TR></TABLE>>];
+{ rank=same; l; r; }
+}

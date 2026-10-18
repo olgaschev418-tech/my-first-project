@@ -1,0 +1,9 @@
+Сотрудники компании
+1-й управляет
+2-й программирует
+3-й управляет
+4-й программирует
+MRO Manager: Manager -> Employee -> ManagerSkills -> object
+MRO Developer: Developer -> Employee -> DeveloperSkills -> object
+Совмещение обязанностей: 5-й управляет; 5-й программирует
+MRO TeamLead: TeamLead -> Employee -> ManagerSkills -> DeveloperSkills -> object

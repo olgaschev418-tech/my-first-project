@@ -1,0 +1,11 @@
+{
+  "id": 1,
+  "metadata": {
+    "author": "Шевченко О.Н."
+  },
+  "k": 2,
+  "predicted_revenue": 450.0,
+  "cost": 300,
+  "ROI_percent": 50.0,
+  "interpretation": "Прибыль"
+}

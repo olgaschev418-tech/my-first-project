@@ -1,0 +1,11 @@
+digraph G { graph [rankdir=BT, bgcolor="white", pad="0.15", nodesep="0.25", ranksep="0.6"]; node [shape=plain, fontname="DejaVu Sans", fontsize=12]; edge [arrowhead=empty, arrowsize=1.2];
+base [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>BaseComponent</B></TD></TR><HR/><TR><TD ALIGN="LEFT">- _ids: Iterator[int]</TD></TR><TR><TD ALIGN="LEFT">+ id: int</TD></TR><TR><TD ALIGN="LEFT">+ metadata: dict</TD></TR><TR><TD ALIGN="LEFT">+ init_trace: list[str]</TD></TR><HR/><TR><TD ALIGN="LEFT">+ __init__(metadata: dict | None, **kwargs): None</TD></TR><TR><TD ALIGN="LEFT">+ describe(): str</TD></TR></TABLE>>];
+ml [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>MLModel</B></TD></TR><HR/><TR><TD ALIGN="LEFT">- _xs: list[float]</TD></TR><TR><TD ALIGN="LEFT">- _ys: list[float]</TD></TR><TR><TD ALIGN="LEFT">+ k: int</TD></TR><TR><TD ALIGN="LEFT">- _fitted: bool</TD></TR><HR/><TR><TD ALIGN="LEFT">+ __init__(**kwargs): None</TD></TR><TR><TD ALIGN="LEFT">+ describe(): str</TD></TR><TR><TD ALIGN="LEFT">+ load_data(xs: list, ys: list): None</TD></TR><TR><TD ALIGN="LEFT">+ fit(k: int): MLModel</TD></TR><TR><TD ALIGN="LEFT">- _knn(x: float, xs: list, ys: list, k: int): float</TD></TR><TR><TD ALIGN="LEFT">+ predict(x: float): float</TD></TR><TR><TD ALIGN="LEFT">+ metrics(xs: list, ys: list): dict[str, float]</TD></TR><TR><TD ALIGN="LEFT">+ tune_k(candidates: list[int]): tuple[int, dict]</TD></TR></TABLE>>];
+eco [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>EconomicIndicator</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ __init__(**kwargs): None</TD></TR><TR><TD ALIGN="LEFT">+ describe(): str</TD></TR><TR><TD ALIGN="LEFT">+ roi(revenue: float, cost: float): float</TD></TR><TR><TD ALIGN="LEFT">+ interpret(roi: float): str</TD></TR></TABLE>>];
+hybrid [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7"><TR><TD><B>HybridAnalyzer</B></TD></TR><HR/><TR><TD> </TD></TR><HR/><TR><TD ALIGN="LEFT">+ __init__(**kwargs): None</TD></TR><TR><TD ALIGN="LEFT">+ describe(): str</TD></TR><TR><TD ALIGN="LEFT">+ analyze(x: float, cost: float): dict</TD></TR></TABLE>>];
+ml -> base;
+eco -> base;
+hybrid -> ml;
+hybrid -> eco;
+
+}
