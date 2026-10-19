@@ -22,7 +22,9 @@
     "student-template",
     "laptop-resolution",
     "empowered-counterattack",
-    "completed-campaign-cannot-enter-round-four"
+    "completed-campaign-cannot-enter-round-four",
+    "automatic-model-start",
+    "incremental-model-files"
   ],
   "pageErrors": [],
   "failedResources": [],
@@ -46,7 +48,9 @@
       "shipped-python-launcher",
       "native-controls",
       "native-scene-transitions",
-      "bundled-neural-inference"
+      "automatic-model-camera-start",
+      "incremental-three-file-model-import",
+      "real-neural-inference"
     ]
   }
 }
