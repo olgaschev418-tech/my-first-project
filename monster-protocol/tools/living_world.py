@@ -8,7 +8,7 @@ def upgrade(data,assets,starter,api):
     make_world(assets);make_music(assets)
     extra={'Gold':0,'RoomStyle':0,'Badges':0,'MusicOn':1,'VisualFX':0,'PetRequest':0,'UseBattleScaffold':0,'IdleAmplitude':4,'ReactionHeight':27,'MusicVolume':25}
     data['variables'] += [variable(n,v) for n,v in extra.items()]
-    data['properties']['version']='2.0.0'
+    data['properties']['version']='2.0.1'
     data['properties']['description']='Живая мастерская монстров: уютный дом, тренировки, три хранителя и команды камеры.'
     MINT=api['MINT'];WHITE=api['WHITE'];LILAC=api['LILAC'];PEACH=api['PEACH']
     def find(scene,name):return next(o for o in scene.data['objects'] if o['name']==name)
@@ -16,7 +16,7 @@ def upgrade(data,assets,starter,api):
     def common(s):
         s.sprite('HeaderShade',['panel.png'],20,14,1240,122,30)
         for o in s.data['objects']:
-            if o['name']=='Brand':o['characterSize']=16;o['string']='MONSTER PROTOCOL  /  ЖИВАЯ МАСТЕРСКАЯ'
+            if o['name']=='Brand':o['characterSize']=16;o['string']='MONSTER PROTOCOL 2.0.1 / ЖИВАЯ МАСТЕРСКАЯ'
             if o['name']=='Edition':o['string']='AI GAME LAB';o['characterSize']=14
             if o['name']=='Title':o['characterSize']=30
             if o['name']=='Kicker':o['characterSize']=15
@@ -56,6 +56,8 @@ def upgrade(data,assets,starter,api):
     class Proxy:
         def __init__(self,d):self.data=d
     old=Scene('Unused','','');old.data=creator;common(old);back(old,[f'room-{i}.png' for i in range(3)])
+    find(old,'Title')['string']='Новая мастерская • 3 хранителя ждут!'
+    find(old,'Kicker')['string']='Собери героя → нажми «В лабораторию» → дом, музыка и битвы с ответными ударами'
     creator['events'].insert(0,ev(actions=[ins('ChangeAnimation','Backdrop','=',G('RoomStyle'))]))
     creator['events'].append(ev(click('MonsterBody'),[S('PetRequest',1),say('Ещё немного рожек — и можно отправляться в приключение!')]))
     # A furnished house is a world to touch, not a stats form.

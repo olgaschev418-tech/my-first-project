@@ -2,6 +2,8 @@
 from pathlib import Path
 import shutil,tempfile,zipfile,hashlib,json
 R=Path(__file__).resolve().parents[1]
+VERSION='2.0.1'
+SUFFIX='_v2_0_1'
 
 def tree(src,dest):shutil.copytree(R/src,dest,ignore=shutil.ignore_patterns('__pycache__'),dirs_exist_ok=True)
 def file(src,dest):
@@ -31,7 +33,8 @@ def validate_project(folder):
 out=R/'downloads';out.mkdir(exist_ok=True)
 for kind in ['Demo','Student','Teacher']:
  with tempfile.TemporaryDirectory(prefix='protocol-package-') as temp:
-  root=Path(temp)/('Monster_Protocol_'+kind);root.mkdir()
+  root=Path(temp)/('Monster_Protocol_'+kind+SUFFIX);root.mkdir()
+  (root/'BUILD_INFO.json').write_text(json.dumps({'version':VERSION,'edition':kind,'features':['animated-home','three-rivals','counterattacks','music']},ensure_ascii=False,indent=2),encoding='utf-8')
   tree('docs',root/'docs');tree('licenses',root/'licenses');file('LICENSE',root/'LICENSE');file('THIRD_PARTY.md',root/'THIRD_PARTY.md')
   if kind=='Teacher':
    tree('demo',root/'demo');tree('student-template',root/'student-template');tree('teacher',root/'teacher');validate_project(root/'demo');validate_project(root/'student-template')
@@ -53,7 +56,9 @@ for kind in ['Demo','Student','Teacher']:
      content=z.read(name);content.decode('ascii')
      assert b'\n' not in content.replace(b'\r\n',b''),'Batch launcher must use CRLF'
      assert content.endswith(b'\r\n')
-  print(target.name,target.stat().st_size,'bytes; CRC and project resources OK')
+  versioned=out/('Monster_Protocol_'+kind+SUFFIX+'.zip')
+  shutil.copy2(target,versioned)
+  print(target.name,target.stat().st_size,'bytes; CRC and project resources OK; also',versioned.name)
 # Small repair for users who already extracted an earlier demo/teacher ZIP.
 patch=out/'Monster_Protocol_Windows_Fix.zip'
 with zipfile.ZipFile(patch,'w',zipfile.ZIP_DEFLATED) as z:
