@@ -6,8 +6,8 @@ const text=bytes.toString('ascii');assert(!/(?<!\r)\n/.test(text),'Every LF must
 assert(!/\r(?!\n)/.test(text),'No stray CR');
 assert(text.endsWith('\r\n'));
 const lines=text.split('\r\n');
-assert(lines.includes('py -3 "%~dp0start_demo.py"'));
-assert(lines.includes('python "%~dp0start_demo.py"'));
+assert(lines.includes('py -3 "%~dp0start_demo.py" --port 0'));
+assert(lines.includes('python "%~dp0start_demo.py" --port 0'));
 assert(lines.some(l=>l.includes('sys.version_info < (3, 10)')));
 const labels=new Set(lines.filter(l=>l.startsWith(':')).map(l=>l.slice(1)));
 for(const l of lines)for(const m of l.matchAll(/\bgoto ([a-z_]+)/gi))assert(labels.has(m[1]),'Missing label '+m[1]);

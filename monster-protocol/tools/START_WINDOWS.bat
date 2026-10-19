@@ -14,11 +14,11 @@ echo In the Teacher archive, open demo\game.json instead.
 goto done
 
 :run_py
-py -3 "%~dp0start_demo.py"
+py -3 "%~dp0start_demo.py" --port 0
 goto done
 
 :run_python
-python "%~dp0start_demo.py"
+python "%~dp0start_demo.py" --port 0
 goto done
 
 :missing_files

@@ -6,7 +6,8 @@ import argparse, json, threading, webbrowser
 
 p = argparse.ArgumentParser()
 p.add_argument('--no-browser', action='store_true')
-p.add_argument('--port', type=int, default=8011)
+# A free port gives a fresh browser origin, bypassing old offline/service-worker copies.
+p.add_argument('--port', type=int, default=0)
 a = p.parse_args()
 folder = Path(__file__).resolve().parent
 root = folder / 'play'

@@ -68,5 +68,10 @@ with zipfile.ZipFile(patch,'w',zipfile.ZIP_DEFLATED) as z:
   info=zipfile.ZipInfo(name,(2026,10,19,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,content)
 with zipfile.ZipFile(patch) as z:assert z.testzip() is None
 print(patch.name,patch.stat().st_size,'bytes; Windows CRLF launcher')
+# This one-file repair also works with the previously downloaded launcher.
+cache_patch=out/'Monster_Protocol_Cache_Fix.zip'
+with zipfile.ZipFile(cache_patch,'w',zipfile.ZIP_DEFLATED) as z:
+ z.writestr('START_WINDOWS.bat',(R/'tools/START_WINDOWS.bat').read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))
+ z.writestr('README.txt','Скопируйте START_WINDOWS.bat из этого архива в папку новой игры рядом с start_demo.py, согласитесь на замену и запустите. Каждый запуск теперь получает свободный порт: старая офлайн-копия браузера по адресу 8011 не используется. Полную игру повторно скачивать не нужно.\n')
 checks={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(out.glob('*.zip'))}
 (out/'SHA256SUMS.txt').write_text(''.join(f'{v}  {k}\n' for k,v in checks.items()))
