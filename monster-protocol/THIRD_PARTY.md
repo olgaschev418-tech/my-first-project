@@ -6,6 +6,7 @@
 |---|---|---|
 | GDevelop runtime | 5.6.269 | MIT, https://github.com/4ian/GDevelop ; полный NOTICE в licenses/GDevelop-runtime-LICENSE.txt и браузерном экспорте |
 | gdcore-tools, только сборка | 2.0.0-gd-v5.6.269-autobuild | MIT, https://github.com/arthuro555/gdcore-tools |
+| MediaPipe Hands | 0.4.1675469240 | Apache-2.0, https://github.com/google/mediapipe ; licenses/MediaPipe-LICENSE.txt |
 | TensorFlow.js | 1.3.1 | Apache-2.0, https://github.com/tensorflow/tfjs |
 | @teachablemachine/image | 0.8.5 | Apache-2.0, https://github.com/googlecreativelab/teachablemachine-community |
 | DejaVu Sans | системный файл | Bitstream Vera / DejaVu, licenses/DejaVu-copyright.txt |
@@ -16,3 +17,5 @@
 GDevelop и Teachable Machine — самостоятельные проекты; этот комплект не является их официальным продуктом. Облачные функции, тарифы и правила сайтов не входят в локальный комплект.
 
 Версия 2: `tools/world_art.py` воспроизводит оригинальные декорации, разных хранителей и две композиции (home-loop.wav, battle-loop.wav). Это синтезированные музыкальные фразы, без заимствования записей или готовых мелодий. Генератор и готовые файлы входят в MIT-часть комплекта.
+
+Версия 2.1: MediaPipe Hands, WASM и веса включены локально в оба проекта и экспорт. MediaPipe определяет точки руки; правила жестов в teacher/bridge.js соответствуют управлению предыдущей игры. TensorFlow.js/Teachable Machine используются только при загрузке собственной модели в свёрнутых учебных настройках. Старый синтетический набор цветов сохранён как вспомогательный материал разработки и по умолчанию не используется.

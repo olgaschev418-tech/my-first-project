@@ -40,46 +40,15 @@ const base=process.env.PROTOCOL_URL||'http://127.0.0.1:8010';
   const rivals=new Set();rivals.add(await page.evaluate(()=>MonsterProtocol.getScene().getObjects('EnemyTitle')[0].getString()));
   const before=await value('EnemyHP');await click('Shield');assert.equal(await value('Health'),97);assert.equal(await value('EnemyHP'),before);
   await page.screenshot({path:'test-results/03-arena.png'});
-  // Real local neural model, real TM inference on image tensors and fake webcam.
-  await click('Camera');await page.locator('#mp-start').click();await page.waitForFunction(()=>!!MonsterProtocol.getModel());
-  await page.waitForSelector('#mp-video');await page.locator('#mp-stop').click();
-  const predictions=await page.evaluate(async()=>{
-   const out=[];const c=document.createElement('canvas');c.width=c.height=224;const ctx=c.getContext('2d');
-   for(const color of ['#ff0000','#0000ff','#00ff00','#7f7f7f']){ctx.fillStyle=color;ctx.fillRect(0,0,224,224);const p=await MonsterProtocol.getModel().predict(c);out.push(p.reduce((a,b)=>a.probability>b.probability?a:b));}return out;
-  });
-  assert.deepEqual(predictions.map(p=>p.className),['ATTACK','SHIELD','HEAL','IDLE']);assert(predictions.every(p=>p.probability>=.85));
-  const gate=await page.evaluate(()=>{MonsterProtocol.resetGate();const p=n=>[{className:n,probability:.98}];return [MonsterProtocol.gate(p('ATTACK'),100),MonsterProtocol.gate(p('ATTACK'),700),MonsterProtocol.gate(p('ATTACK'),2300),MonsterProtocol.gate(p('IDLE'),2400),MonsterProtocol.gate(p('IDLE'),2900),MonsterProtocol.gate(p('SHIELD'),3000),MonsterProtocol.gate(p('SHIELD'),3600)];});
-  assert.deepEqual(gate,[0,1,0,0,0,0,2]);
-  await page.locator('#mp-start').click();await page.waitForSelector('#mp-video');await page.waitForFunction(()=>document.getElementById('mp-video')?.readyState>=2);
-  const tracks=await page.evaluate(()=>{globalThis.testCameraStream=document.getElementById('mp-video').srcObject;return testCameraStream.getVideoTracks().length;});assert.equal(tracks,1);
-  await page.locator('#mp-stop').click();assert.equal(await page.evaluate(()=>testCameraStream.getTracks().every(t=>t.readyState==='ended')),true);
-  // Import a genuine three-file TF.js/TM export, not a mock network response.
-  await page.locator('#mp-model-files').setInputFiles('teacher/demo-model/model.json');
-  await page.waitForFunction(()=>document.getElementById('mp-status').textContent.includes('metadata.json'));
-  assert((await page.locator('#mp-selected-files').textContent()).includes('model.json'));
-  await page.locator('#mp-model-files').setInputFiles('teacher/demo-model/metadata.json');
-  await page.waitForFunction(()=>document.getElementById('mp-status').textContent.includes('weights.bin'));
-  await page.locator('#mp-model-files').setInputFiles('teacher/demo-model/weights.bin');
-  await page.waitForFunction(()=>document.getElementById('mp-status').textContent.includes('Модель готова'));
-  // Feed a synthetic camera stream into the SAME real model/adapter/game pipeline.
-  // This controls image pixels, never the predicted class or gameplay variables.
-  await page.evaluate(()=>{
-   globalThis.fixtureColor='#7f7f7f';const canvas=document.createElement('canvas');canvas.width=canvas.height=224;const ctx=canvas.getContext('2d');
-   const paint=()=>{ctx.fillStyle=fixtureColor;ctx.fillRect(0,0,224,224);};paint();
-   globalThis.fixtureTimer=setInterval(paint,70);globalThis.originalGetUserMedia=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-   navigator.mediaDevices.getUserMedia=async()=>canvas.captureStream(12);
-  });
-  await page.locator('#mp-start').click();await page.waitForSelector('#mp-video');
-  await page.waitForTimeout(700);const enemyBefore=await value('EnemyHP');
-  await page.evaluate(()=>fixtureColor='#ff0000');
-  await page.waitForFunction(before=>MonsterProtocol.getScene().getGame().getVariables().get('EnemyHP').getAsNumber()===before-30,enemyBefore,{timeout:15000});
-  await page.waitForTimeout(1700);assert.equal(await value('EnemyHP'),enemyBefore-30,'held card must not repeat attack');
-  await page.evaluate(()=>fixtureColor='#7f7f7f');await page.waitForFunction(()=>{const s=document.getElementById('mp-status').textContent;return s.startsWith('IDLE')&&s.includes('готов');},{},{timeout:15000});
-  const energyBefore=await value('Energy');await page.evaluate(()=>fixtureColor='#00ff00');
-  await page.waitForFunction(before=>MonsterProtocol.getScene().getGame().getVariables().get('Energy').getAsNumber()===before-20,energyBefore,{timeout:15000});
-  await page.locator('#mp-stop').click();await page.evaluate(()=>{clearInterval(fixtureTimer);navigator.mediaDevices.getUserMedia=originalGetUserMedia;});
-  await page.waitForFunction(()=>MonsterProtocol.getScene().getVariables().get('Phase').getAsNumber()===0);
-  assert.equal(await scene(),'Arena');await page.screenshot({path:'test-results/04-ai-panel.png'});await page.locator('#mp-close').click();
+  // One click starts the real local hand model, in a nonmodal floating window.
+  await click('Camera');await page.waitForFunction(()=>MonsterProtocol.getCameraState().running,{timeout:60000});
+  await page.waitForFunction(()=>document.getElementById('mp-status')?.textContent.includes('Покажи одну руку'),{},{timeout:60000});
+  assert.equal(await page.locator('#mp-overlay').count(),0);assert.equal(await page.locator('#mp-camera').getAttribute('role'),'region');
+  assert((await page.locator('#mp-camera').boundingBox()).width<260);
+  const enemyBefore=await value('EnemyHP');await page.waitForTimeout(1000);assert.equal(await value('EnemyHP'),enemyBefore,'No hand must not attack');
+  await page.screenshot({path:'test-results/04-ai-panel.png'});
+  const tracks=await page.evaluate(()=>{globalThis.testCameraStream=document.getElementById('mp-video').srcObject;return testCameraStream.getTracks().length;});assert.equal(tracks,1);
+  await page.locator('#mp-close').click();assert(await page.evaluate(()=>testCameraStream.getTracks().every(t=>t.readyState==='ended')));
   // Complete all three battles with actual UI events, no injected gameplay stats.
   for(let round=1;round<=3;round++){
    if(await scene()==='Lab'){await click('Rest');await click('Battle');await waitScene('Arena');}
@@ -102,7 +71,7 @@ const base=process.env.PROTOCOL_URL||'http://127.0.0.1:8010';
   await page.screenshot({path:'test-results/06-student.png'});
   await page.setViewportSize({width:1366,height:768});await page.waitForTimeout(500);await click('BodyNext');assert.equal(await value('BodyVariant'),2);
   assert.deepEqual(errors,[],'No JS errors');assert.deepEqual(bad,[],'No failed resources');assert.deepEqual(external,[],'No external network requests during gameplay and local ML');
-  console.log('PASS: native GDevelop exports; 10 selectors/wraparound; paired eyes; rename/save/reload; energy/training/levels; 3-battle campaign; failure/recovery; AI real inference, local model import, webcam lifecycle, gate; starter and 1366×768 input.');
-  fs.writeFileSync('test-results/result.json',JSON.stringify({passed:true,checks:['native-scenes','idle-animation','music-playback-and-mute','pet-reaction','three-distinct-rivals','animated-counterattack','home-upgrades-and-trophies','10-selectors','paired-eyes','save-reload','training','campaign','failure-recovery','real-neural-inference','model-import','fake-webcam','real-camera-pixels-to-game-command','command-gate','student-template','laptop-resolution'],pageErrors:errors,failedResources:bad,externalRequests:external},null,2));
+  console.log('PASS: native GDevelop exports; 10 selectors/wraparound; paired eyes; rename/save/reload; energy/training/levels; 3-battle campaign; failure/recovery; real local hand inference, one-click floating camera, webcam lifecycle; starter and 1366×768 input.');
+  fs.writeFileSync('test-results/result.json',JSON.stringify({passed:true,checks:['native-scenes','idle-animation','music-playback-and-mute','pet-reaction','three-distinct-rivals','animated-counterattack','home-upgrades-and-trophies','10-selectors','paired-eyes','save-reload','training','campaign','failure-recovery','real-hand-neural-inference','floating-camera','one-click-camera','no-hand-abstention','student-template','laptop-resolution'],pageErrors:errors,failedResources:bad,externalRequests:external},null,2));
  }catch(error){console.error('Failure context:',await page.evaluate(()=>({scene:globalThis.MonsterProtocol?.getScene()?.getName(),status:document.getElementById('mp-status')?.textContent,battle:document.getElementById('mp-battle-state')?.textContent})));await page.screenshot({path:'test-results/failure.png'});throw error;}finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

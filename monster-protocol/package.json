@@ -1,6 +1,6 @@
 {
   "name": "monster-protocol-classroom",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "private": true,
   "scripts": {
     "generate": "python3 tools/generate.py",
@@ -10,7 +10,8 @@
     "package": "python3 tools/package.py",
     "test:windows-launcher": "node tests/windows-launcher.cjs",
     "test:assisted": "node tests/assisted.mjs",
-    "capture:preview": "node tools/capture-preview.cjs"
+    "capture:preview": "node tools/capture-preview.cjs",
+    "test:camera": "node tests/hand-camera.cjs"
   },
   "devDependencies": {
     "gdcore-tools": "2.0.0-gd-v5.6.269-autobuild",

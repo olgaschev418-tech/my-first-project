@@ -2,8 +2,8 @@
 from pathlib import Path
 import shutil,tempfile,zipfile,hashlib,json
 R=Path(__file__).resolve().parents[1]
-VERSION='2.0.1'
-SUFFIX='_v2_0_1'
+VERSION='2.1.0'
+SUFFIX='_v2_1_0'
 
 def tree(src,dest):shutil.copytree(R/src,dest,ignore=shutil.ignore_patterns('__pycache__'),dirs_exist_ok=True)
 def file(src,dest):

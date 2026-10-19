@@ -14,43 +14,25 @@
     "training",
     "campaign",
     "failure-recovery",
-    "real-neural-inference",
-    "model-import",
-    "fake-webcam",
-    "real-camera-pixels-to-game-command",
-    "command-gate",
+    "real-hand-neural-inference",
+    "floating-camera",
+    "one-click-camera",
+    "no-hand-abstention",
     "student-template",
-    "laptop-resolution",
-    "empowered-counterattack",
-    "completed-campaign-cannot-enter-round-four",
-    "automatic-model-start",
-    "incremental-model-files"
+    "laptop-resolution"
   ],
   "pageErrors": [],
   "failedResources": [],
   "externalRequests": [],
-  "version": "2.0.0",
-  "studentAssisted": {
-    "passed": true,
-    "checks": [
-      "native-student-button-events",
-      "supplied-scaffold",
-      "busy-click-lock",
-      "empowered-warning",
-      "shield-caps-damage-at-3",
-      "reward-and-finale"
-    ]
-  },
-  "packagedDemo": {
-    "passed": true,
-    "checks": [
-      "extracted-archive",
-      "shipped-python-launcher",
-      "native-controls",
-      "native-scene-transitions",
-      "automatic-model-camera-start",
-      "incremental-three-file-model-import",
-      "real-neural-inference"
-    ]
-  }
+  "version": "2.1.0",
+  "camera_checks": [
+    "actual-local-mediapipe-inference-with-no-hand",
+    "landmark-fixtures-for-fist-palm-two-fingers",
+    "held-fist-no-repeat-across-counterattack",
+    "unknown-gesture-abstains",
+    "nonmodal-draggable-camera",
+    "native-buttons-with-open-camera",
+    "stop-restart-toggle-denied-permission"
+  ],
+  "camera_limit": "Physical hands and the classroom camera still require an on-device check; gesture command fixtures use synthetic landmarks."
 }

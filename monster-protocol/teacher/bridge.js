@@ -1,7 +1,7 @@
 /* Teacher-owned adapter. Gameplay lives in visible GDevelop events, not here. */
 if (!globalThis.MonsterProtocol) {
   globalThis.MonsterProtocol = (() => {
-    let scene, model=null, panel=null, webcam=null, stream=null, running=false, session=0;
+    let scene, model=null, panel=null, webcam=null, stream=null, running=false, session=0, handEngine=null, handReady=null, frameTask=Promise.resolve();
     let candidate='', since=0, neutralSince=0, armed=true, lastCommand=-Infinity;
     const allowed=['ATTACK','SHIELD','HEAL','IDLE'];
     const state=()=>scene.getGame().getVariables();
@@ -34,7 +34,7 @@ if (!globalThis.MonsterProtocol) {
       armed=false;lastCommand=now;
       return {ATTACK:1,SHIELD:2,HEAL:3}[label]||0;
     }
-    function stop(){session++;running=false;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;if(webcam){webcam.srcObject=null;webcam.remove();webcam=null;}set('AICommand',0);resetGate();status('Камера выключена. Кнопки игры доступны.');}
+    function stop(){session++;running=false;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;if(webcam){webcam.srcObject=null;webcam.remove();webcam=null;}set('AICommand',0);resetGate();const retry=document.getElementById('mp-retry');if(retry)retry.hidden=false;status('Камера выключена. Кнопки игры доступны.');}
     function close(){stop();if(panel)panel.remove();panel=null;}
     function shell(title){
       close();panel=document.createElement('div');panel.id='mp-overlay';panel.setAttribute('role','dialog');panel.setAttribute('aria-label',title);
@@ -64,57 +64,103 @@ if (!globalThis.MonsterProtocol) {
       await replaceModel(new tmImage.CustomMobileNet(layers,meta));
     }
     async function demoModel(){await libraries();const response=await fetch(resource('demo-bundle.json'));if(!response.ok)throw Error('Не найден локальный комплект модели');const b=await response.json();const weightData=Uint8Array.from(atob(b.weightData),c=>c.charCodeAt(0)).buffer;const layers=await tf.loadLayersModel(tf.io.fromMemory(b.modelTopology,b.weightSpecs,weightData));await replaceModel(new tmImage.CustomMobileNet(layers,b.metadata));}
-    async function start(){
-      const openingPanel=panel;
-      if(!model){
-        status('Загружаем встроенную модель цветных карточек…');
-        try{await demoModel();if(!panel||panel!==openingPanel)return;}catch(e){status('Не удалось загрузить встроенную модель: '+e.message);return;}
+    // Same gesture vocabulary as the previous game. MediaPipe finds the hand;
+    // readable distance rules turn its 21 landmarks into three commands.
+    function handLabel(points){
+      if(!points||points.length!==21)return 'IDLE';
+      const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,(a.z||0)-(b.z||0));
+      const [index,middle,ring,pinky]=[8,12,16,20].map(tip=>distance(points[tip],points[0])>distance(points[tip-2],points[0])*1.15);
+      if(!index&&!middle&&!ring&&!pinky)return 'ATTACK';
+      if(index&&middle&&ring&&pinky)return 'SHIELD';
+      if(index&&middle&&!ring&&!pinky)return 'HEAL';
+      return 'IDLE';
+    }
+    const links=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+    function deliver(label){
+      const ready=scene.getName()==='Arena'&&scene.getVariables().get('Phase').getAsNumber()===0&&!document.getElementById('mp-learning')?.open;
+      // Never accumulate a command during the enemy turn or outside the arena.
+      const command=gate([{className:label,probability:1}]);
+      if(command&&ready)set('AICommand',command);
+    }
+    function handResults(result){
+      const points=result.multiHandLandmarks?.[0]||null;
+      const canvas=document.getElementById('mp-hand-draw');
+      if(canvas){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
+        if(points){ctx.strokeStyle='#baf5d2';ctx.lineWidth=2;
+          for(const [a,b] of links){ctx.beginPath();ctx.moveTo(points[a].x*canvas.width,points[a].y*canvas.height);ctx.lineTo(points[b].x*canvas.width,points[b].y*canvas.height);ctx.stroke();}
+          ctx.fillStyle='#bca7ff';for(const p of points){ctx.beginPath();ctx.arc(p.x*canvas.width,p.y*canvas.height,2.5,0,Math.PI*2);ctx.fill();}
+        }
       }
-      stop();const token=session;status('Разреши доступ к камере…');
+      const label=handLabel(points);deliver(label);
+      const names={ATTACK:'Кулак — атака',SHIELD:'Ладонь — щит',HEAL:'Два пальца — лечение'};
+      status(!points?'Покажи одну руку целиком':label==='IDLE'?'Поверни ладонь к камере':names[label]+(armed?' · удержи жест':' · убери руку'));
+    }
+    async function hands(){
+      if(!handReady){handReady=(async()=>{
+        await loadScript('hands.js','Hands');
+        handEngine=new Hands({locateFile:name=>resource(name)});
+        handEngine.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.7,minTrackingConfidence:.7});
+        await handEngine.initialize();return handEngine;
+      })().catch(e=>{handReady=null;throw e;});}
+      return handReady;
+    }
+    async function start(){
+      stop();const retry=document.getElementById('mp-retry');if(retry)retry.hidden=true;const token=session;status('Разреши камеру…');
       try{
-        if(!navigator.mediaDevices?.getUserMedia)throw Error('Камере нужен localhost или HTTPS. Запусти START_WINDOWS.bat из распакованной папки.');
-        const acquired=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'},audio:false});
+        if(!navigator.mediaDevices?.getUserMedia)throw Error('Запусти игру через START_WINDOWS.bat: камере нужен localhost или HTTPS.');
+        const acquired=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:false});
         if(token!==session){acquired.getTracks().forEach(t=>t.stop());return;}
-        stream=acquired;webcam=document.createElement('video');webcam.id='mp-video';webcam.autoplay=true;webcam.muted=true;webcam.playsInline=true;webcam.style.cssText='width:240px;border-radius:14px;transform:scaleX(-1)';webcam.srcObject=stream;
-        document.getElementById('mp-video-box').append(webcam);await webcam.play();
-        if(token!==session)return;running=true;resetGate();
+        stream=acquired;webcam=document.createElement('video');webcam.id='mp-video';webcam.autoplay=true;webcam.muted=true;webcam.playsInline=true;
+        webcam.style.cssText='display:block;width:100%;height:150px;object-fit:contain;transform:scaleX(-1);background:#100b20;border-radius:10px';webcam.srcObject=stream;
+        document.getElementById('mp-video-box').prepend(webcam);await webcam.play();
+        if(token!==session)return;
+        let engine=null;
+        if(!model){status('Загружаем распознавание руки…');engine=await hands();}
+        if(token!==session)return;
+        running=true;resetGate();
+        if(engine){await frameTask.catch(()=>{});if(token!==session)return;engine.onResults(result=>{if(running&&token===session)handResults(result);});}
         while(running&&token===session){
-          const predictions=await model.predict(webcam,false);if(token!==session)break;
-          const top=predictions.reduce((a,b)=>a.probability>b.probability?a:b);
-          const command=gate(predictions);
-          status(top.className+' · '+Math.round(top.probability*100)+'%'+(armed?' · готов':' · убери карточку / вернись в IDLE'));
-          if(command&&scene.getName()==='Arena')set('AICommand',command);
+          if(engine){frameTask=engine.send({image:webcam});await frameTask;}
+          else{
+            const predictions=await model.predict(webcam,false);if(token!==session)break;
+            const top=predictions.reduce((a,b)=>a.probability>b.probability?a:b);
+            deliver(top.probability>=.85?top.className:'IDLE');status('Своя модель: '+top.className+(armed?'':' · убери руку'));
+          }
           await new Promise(r=>setTimeout(r,100));
         }
-      }catch(e){if(token===session){stop();const help={NotAllowedError:'Разреши камеру в настройках рядом с адресом браузера.',NotFoundError:'Камера не найдена. Проверь подключение.',NotReadableError:'Камера занята или недоступна. Закрой видеозвонки и попробуй снова.'};status(help[e.name]||('Камера или модель: '+e.message));}}
+      }catch(e){if(token===session){stop();const help={NotAllowedError:'Разреши камеру рядом с адресом браузера.',NotFoundError:'Камера не найдена.',NotReadableError:'Камера занята. Закрой видеозвонок.'};status(help[e.name]||('Не удалось включить камеру: '+e.message));}}
     }
-    function camera(){const root=shell('Teachable Machine → команды игры');
-      root.innerHTML='<p>Быстрый старт: нажми <b>«Включить камеру»</b>. Встроенная модель цветных карточек загрузится сама.</p><p>Для своей модели: 4 класса <b>ATTACK · SHIELD · HEAL · IDLE</b>. Добавь <b>model.json, metadata.json и все веса</b> из экспорта TensorFlow.js — вместе или по очереди. Выбранные файлы останутся в списке.</p><input id="mp-model-files" type="file" multiple accept=".json,.bin"><p><button id="mp-demo">Модель цветных карточек</button> <button id="mp-start">Включить камеру</button> <button id="mp-stop">Выключить камеру</button></p><p>Красная карточка — атака, синяя — щит, зелёная — лечение. Нейтральный серый фон — IDLE. Это модель цвета, а не распознавание рук. Удержи карточку 0,5 с, затем убери её.</p><div id="mp-video-box"></div><p id="mp-battle-state" style="padding:12px;background:#171122;border-radius:10px"></p><p>Оставь окно открытым на арене. Для перехода к кнопкам нажми «Закрыть»: камера выключится. Видео и файлы обрабатываются в этом браузере.</p>';
+    function camera(){
+      if(panel?.id==='mp-camera'){close();return;}
+      close();panel=document.createElement('section');panel.id='mp-camera';panel.setAttribute('role','region');panel.setAttribute('aria-label','Камера: управление рукой');
+      panel.style.cssText='position:fixed;right:12px;top:145px;width:220px;max-width:85vw;max-height:75vh;overflow:auto;box-sizing:border-box;z-index:99999;background:#282039f5;color:#fff8ed;border:1px solid #bca7ff;border-radius:16px;padding:10px;box-shadow:0 8px 32px #0007;font:13px system-ui';
+      panel.innerHTML='<header id="mp-drag" style="display:flex;align-items:center;justify-content:space-between;cursor:move;touch-action:none;padding:0 0 8px"><b>Управление рукой</b><button id="mp-close" aria-label="Выключить камеру" style="font:20px system-ui;background:transparent;color:inherit;border:0;cursor:pointer">×</button></header><div id="mp-video-box" style="position:relative;min-height:50px"><canvas id="mp-hand-draw" width="200" height="150" style="position:absolute;inset:0;width:100%;height:150px;transform:scaleX(-1);pointer-events:none"></canvas></div><p style="display:flex;justify-content:space-between;font-size:11px;margin:8px 0"><span>✊ Атака</span><span>✋ Щит</span><span>✌ Лечение</span></p><p id="mp-status" role="status" style="min-height:30px;margin:6px 0;color:#baf5d2"></p><button id="mp-retry" style="font:inherit">Перезапустить камеру</button><details id="mp-learning" style="margin-top:8px;font-size:11px"><summary>Своя модель для занятия</summary><p>Необязательно: экспорт Teachable Machine с классами ATTACK, SHIELD, HEAL, IDLE. Добавь model.json, metadata.json и веса.</p><input id="mp-model-files" type="file" multiple accept=".json,.bin" style="width:100%"><p id="mp-selected-files"></p><button id="mp-hands">Вернуть жесты руки</button></details>';
+      for(const event of ['mousedown','mouseup','pointerdown','pointerup','touchstart','touchend'])panel.addEventListener(event,e=>e.stopPropagation());
+      document.body.append(panel);panel.querySelector('#mp-close').onclick=close;panel.querySelector('#mp-retry').onclick=start;
+      const header=panel.querySelector('#mp-drag');let drag=null;
+      header.onpointerdown=e=>{if(e.target.closest('button'))return;const b=panel.getBoundingClientRect();drag={x:e.clientX-b.left,y:e.clientY-b.top};header.setPointerCapture(e.pointerId);};
+      header.onpointermove=e=>{if(!drag)return;panel.style.right='auto';panel.style.left=Math.max(0,Math.min(innerWidth-panel.offsetWidth,e.clientX-drag.x))+'px';panel.style.top=Math.max(0,Math.min(innerHeight-panel.offsetHeight,e.clientY-drag.y))+'px';};
+      header.onpointerup=header.onpointercancel=()=>{drag=null;};
       const collected=new Map();
-      const selection=document.createElement('p');selection.id='mp-selected-files';selection.textContent='Своя модель: файлы пока не добавлены.';root.querySelector('#mp-model-files').after(selection);
-      root.querySelector('#mp-model-files').onchange=async e=>{
-        for(const file of e.target.files)collected.set(file.name,file);
-        selection.textContent='Добавлены: '+[...collected.keys()].join(', ');
-        try{
-          const files=[...collected.values()],missing=missingFiles(files);
-          if(missing.length){status('Файлы добавлены. Теперь добавь: '+missing.join(', ')+', затем файл весов из той же папки. Можно выбирать по очереди.');return;}
-          status('Проверяем комплект модели…');await loadLocal(files);
-        }catch(err){status('Модель пока не загружена: '+err.message+' Добавь недостающий файл, уже выбранные сохранены.');}
+      panel.querySelector('#mp-model-files').onchange=async e=>{
+        for(const f of e.target.files)collected.set(f.name,f);
+        const selection=document.getElementById('mp-selected-files');selection.textContent='Добавлены: '+[...collected.keys()].join(', ');
+        try{await loadLocal([...collected.values()]);status('Модель готова. Закрой эти настройки и нажми «Перезапустить камеру».');}catch(err){status(err.message);}
       };
-      root.querySelector('#mp-demo').onclick=async()=>{try{status('Загружаем локальную модель…');await demoModel();}catch(e){status('Модель не загружена: '+e.message);}};
-      root.querySelector('#mp-start').onclick=start;root.querySelector('#mp-stop').onclick=stop;
-      status(model?'Модель готова. Можно включить камеру.':'Для быстрого старта нажми «Включить камеру»: встроенная модель карточек загрузится автоматически. Для своей модели добавь model.json, metadata.json и веса — вместе или по очереди.');
+      panel.querySelector('#mp-hands').onclick=()=>{stop();if(model)model.model.dispose();model=null;panel.querySelector('details').open=false;start();};
+      start();
     }
     const fields=['Name','Health','Energy','Strength','XP','Level','Wins','Round','Gold','RoomStyle','Badges',...['Body','Eyes','Mouth','Arms','Legs','Horns','Nose','Ears','Tail','Wings'].map(x=>x+'Variant')];
     const limits={Gold:[0,100000],RoomStyle:[0,2],Badges:[0,3],Health:[0,100],Energy:[0,100],Strength:[10,30],XP:[0,100000],Level:[1,33334],Wins:[0,3],Round:[1,3],BodyVariant:[0,5],EyesVariant:[0,7],MouthVariant:[0,5]};
     function save(){try{const values={};for(const n of fields)values[n]=n==='Name'?state().get(n).getAsString():get(n);localStorage.setItem('monster-protocol-v1',JSON.stringify({version:1,values}));set('Message','Сохранено в этом браузере. Для переноса копируй проект; эта запись не передаётся автоматически.');}catch{set('Message','Браузер запретил локальное сохранение. Сохрани проект в GDevelop.');}}
     function load(){try{const data=JSON.parse(localStorage.getItem('monster-protocol-v1'));if(data?.version!==1||!data.values)throw Error('Нет сохранения');for(const n of fields){const v=data.values[n]===undefined&&['Gold','RoomStyle','Badges'].includes(n)?get(n):data.values[n];data.values[n]=v;if(n==='Name'){if(typeof v!=='string'||!v.trim()||v.length>24)throw Error('Имя');}else{const [lo,hi]=limits[n]||[0,3];if(!Number.isFinite(v)||!Number.isInteger(v)||v<lo||v>hi)throw Error(n);}}for(const n of fields)set(n,data.values[n]);set('Message','Сохранение загружено.');}catch{set('Message','Корректное сохранение не найдено. Текущий монстр не изменён.');}}
-    function tick(next){if(scene&&scene!==next&&panel)close();scene=next;
+    function tick(next){if(scene&&scene!==next){if(panel&&panel.id!=='mp-camera')close();resetGate();}scene=next;
+      const cameraLabel=scene.getObjects('CameraLabel')[0];if(cameraLabel)cameraLabel.setString(panel?.id==='mp-camera'?'Выключить камеру':'Включить камеру');
       const battle=document.getElementById('mp-battle-state');if(battle)battle.textContent='Раунд '+get('Round')+' / 3 · Соперник: '+get('EnemyHP')+' HP · Ты: '+get('Health')+' HP · Энергия: '+get('Energy')+' · '+state().get('Message').getAsString();
       for(const [key,fn] of [['NamePanel',rename],['AIPanel',camera],['SaveRequest',save],['LoadRequest',load]])if(get(key)){set(key,0);fn();}
     }
     window.addEventListener('pagehide',()=>{if(scene)stop();});
-    return {tick,gate,resetGate,stop,close,loadLocal,demoModel,getScene:()=>scene,getModel:()=>model};
+    return {tick,gate,resetGate,stop,close,loadLocal,demoModel,handLabel,getCameraState:()=>({running,mode:model?'custom':'hands'}),getScene:()=>scene,getModel:()=>model};
   })();
 }
 runtimeScene.getGame().enableMetrics(false);

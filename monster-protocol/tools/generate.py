@@ -209,6 +209,12 @@ def project(folder,starter=False):
     for name,source in [('tf.min.js','@tensorflow/tfjs/dist/tf.min.js'),('tm.min.js','@teachablemachine/image/dist/teachablemachine-image.min.js')]:
         shutil.copy(ROOT/'node_modules'/source,assets/name)
         resources.append({'name':'assets/'+name,'file':'assets/'+name,'kind':'javascript','metadata':'','userAdded':True})
+    # Raw MediaPipe sidecars travel with the native project. JSON resources with
+    # disablePreload are copied by GDevelop without parsing; Hands owns decoding.
+    for source in sorted((ROOT/'teacher/hand-model').iterdir()):
+        if source.suffix not in ('.js','.wasm','.data','.tflite','.binarypb'):continue
+        shutil.copy(source,assets/source.name)
+        resources.append({'name':'assets/'+source.name,'file':'assets/'+source.name,'kind':'javascript' if source.suffix=='.js' else 'json','disablePreload':True,'metadata':'','userAdded':True})
     shutil.copy(ROOT/'teacher/demo-model/bundle.json', assets/'demo-bundle.json')
     resources.append({'name':'assets/demo-bundle.json','file':'assets/demo-bundle.json','kind':'json','metadata':'','userAdded':True})
     data.update({'firstLayout':'MonsterCreator','gdVersion':{'major':5,'minor':6,'build':269,'revision':0},'resources':{'resources':resources,'resourceFolders':[]},'objects':[],'objectsGroups':[],'externalEvents':[],'externalLayouts':[],'eventsFunctionsExtensions':[],'externalSourceFiles':[]})
