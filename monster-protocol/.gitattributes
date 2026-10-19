@@ -3,3 +3,6 @@
 /student-template/assets/*.js linguist-vendored -diff -whitespace
 /licenses/** linguist-vendored -whitespace
 /downloads/*.zip binary
+
+# Windows cmd.exe launchers require Windows line endings.
+/tools/*.bat text eol=crlf

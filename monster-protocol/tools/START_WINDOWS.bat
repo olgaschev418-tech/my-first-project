@@ -1,16 +1,29 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
-where py >nul 2>nul
-if not errorlevel 1 (
-  py -3 start_demo.py
-  goto done
-)
-where python >nul 2>nul
-if not errorlevel 1 (
-  python start_demo.py
-  goto done
-)
-echo Python не найден. Откройте game.json из папки project или demo в GDevelop и нажмите Предпросмотр.
+if not exist "%~dp0start_demo.py" goto missing_files
+
+py -3 -c "import sys; sys.exit(sys.version_info < (3, 10))" >nul 2>nul
+if not errorlevel 1 goto run_py
+python -c "import sys; sys.exit(sys.version_info < (3, 10))" >nul 2>nul
+if not errorlevel 1 goto run_python
+
+echo Python 3.10 or newer was not found.
+echo Install Python, or open project\game.json in GDevelop and click Preview.
+echo In the Teacher archive, open demo\game.json instead.
+goto done
+
+:run_py
+py -3 "%~dp0start_demo.py"
+goto done
+
+:run_python
+python "%~dp0start_demo.py"
+goto done
+
+:missing_files
+echo start_demo.py is missing. Extract the ENTIRE archive before running this file.
+
 :done
 pause
+endlocal

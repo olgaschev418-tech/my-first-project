@@ -4,7 +4,13 @@ import shutil,tempfile,zipfile,hashlib,json
 R=Path(__file__).resolve().parents[1]
 
 def tree(src,dest):shutil.copytree(R/src,dest,ignore=shutil.ignore_patterns('__pycache__'),dirs_exist_ok=True)
-def file(src,dest):dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(R/src,dest)
+def file(src,dest):
+ dest.parent.mkdir(parents=True,exist_ok=True)
+ if dest.suffix.lower()=='.bat':
+  # ZIP bytes must be correct regardless of checkout/autocrlf settings.
+  text=(R/src).read_bytes().decode('ascii').replace('\r\n','\n').replace('\r','\n')
+  dest.write_bytes(text.replace('\n','\r\n').encode('ascii'))
+ else:shutil.copy2(R/src,dest)
 def validate_project(folder):
  d=json.loads((folder/'game.json').read_text());names=[]
  for r in d['resources']['resources']:
@@ -40,7 +46,22 @@ for kind in ['Demo','Student','Teacher']:
    for p in sorted(root.rglob('*')):
     if p.is_file():
      info=zipfile.ZipInfo(str(p.relative_to(Path(temp))),(2026,10,19,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16;z.writestr(info,p.read_bytes())
-  with zipfile.ZipFile(target) as z:assert z.testzip() is None
+  with zipfile.ZipFile(target) as z:
+   assert z.testzip() is None
+   for name in z.namelist():
+    if name.lower().endswith('.bat'):
+     content=z.read(name);content.decode('ascii')
+     assert b'\n' not in content.replace(b'\r\n',b''),'Batch launcher must use CRLF'
+     assert content.endswith(b'\r\n')
   print(target.name,target.stat().st_size,'bytes; CRC and project resources OK')
+# Small repair for users who already extracted an earlier demo/teacher ZIP.
+patch=out/'Monster_Protocol_Windows_Fix.zip'
+with zipfile.ZipFile(patch,'w',zipfile.ZIP_DEFLATED) as z:
+ for name,content in [
+  ('START_WINDOWS.bat',(R/'tools/START_WINDOWS.bat').read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\r\n')),
+  ('README_FIX_RU.txt','Распакуйте этот архив. Скопируйте START_WINDOWS.bat в уже распакованную папку игры, рядом с start_demo.py, и замените старый файл. Затем запустите START_WINDOWS.bat. Не запускайте файл внутри ZIP. Нужен Python 3.10+; без него откройте project/game.json (или demo/game.json) в GDevelop и нажмите Предпросмотр.\n'.encode('utf-8'))]:
+  info=zipfile.ZipInfo(name,(2026,10,19,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,content)
+with zipfile.ZipFile(patch) as z:assert z.testzip() is None
+print(patch.name,patch.stat().st_size,'bytes; Windows CRLF launcher')
 checks={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(out.glob('*.zip'))}
 (out/'SHA256SUMS.txt').write_text(''.join(f'{v}  {k}\n' for k,v in checks.items()))
