@@ -2,7 +2,7 @@
 
 ## AI GAME LAB — MONSTER PROTOCOL на GDevelop
 
-Новый курс для детей 8–10 лет: сборка собственного монстра из частей, лаборатория, арена и команды камеры через Teachable Machine. **12 занятий по 45 минут.**
+Живая игра для детей 8–10 лет: свой монстр, уютный дом с улучшениями, анимации, музыка, три хранителя с ответными ударами и команды камеры через Teachable Machine. **12 занятий по 45 минут.**
 
 - [Готовая игра для показа](monster-protocol/downloads/Monster_Protocol_Demo.zip).
 - [Шаблон для учеников](monster-protocol/downloads/Monster_Protocol_Student.zip).

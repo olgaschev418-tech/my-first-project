@@ -199,17 +199,19 @@ def project(folder,starter=False):
     bridge=(ROOT/'teacher/bridge.js').read_text()
     for s in scenes:
         s.add(group('99 · Служебный адаптер преподавателя: имя, локальное сохранение, Teachable Machine',[js(bridge)]))
+    from living_world import upgrade
+    data=upgrade({'properties':props,'variables':[variable(n,v) for n,v in variables.items()],'layouts':[s.data for s in scenes]}, assets, starter, globals())
     resources=[]
     for f in sorted(assets.iterdir()):
-        if f.suffix not in ('.png','.ttf'):continue
-        resources.append({'name':'assets/'+f.name,'file':'assets/'+f.name,'kind':'font' if f.suffix=='.ttf' else 'image','metadata':'','smoothed':True,'userAdded':True,'alwaysLoaded':False})
+        if f.suffix not in ('.png','.ttf','.wav'):continue
+        resources.append({'name':'assets/'+f.name,'file':'assets/'+f.name,'kind':'font' if f.suffix=='.ttf' else 'audio' if f.suffix=='.wav' else 'image','metadata':'','smoothed':True,'userAdded':True,'alwaysLoaded':False})
     # JavaScript resources preserve local ML libraries through native GDevelop export.
     for name,source in [('tf.min.js','@tensorflow/tfjs/dist/tf.min.js'),('tm.min.js','@teachablemachine/image/dist/teachablemachine-image.min.js')]:
         shutil.copy(ROOT/'node_modules'/source,assets/name)
         resources.append({'name':'assets/'+name,'file':'assets/'+name,'kind':'javascript','metadata':'','userAdded':True})
     shutil.copy(ROOT/'teacher/demo-model/bundle.json', assets/'demo-bundle.json')
     resources.append({'name':'assets/demo-bundle.json','file':'assets/demo-bundle.json','kind':'json','metadata':'','userAdded':True})
-    data={'firstLayout':'MonsterCreator','gdVersion':{'major':5,'minor':6,'build':269,'revision':0},'properties':props,'resources':{'resources':resources,'resourceFolders':[]},'variables':[variable(n,v) for n,v in variables.items()],'objects':[],'objectsGroups':[],'layouts':[s.data for s in scenes],'externalEvents':[],'externalLayouts':[],'eventsFunctionsExtensions':[],'externalSourceFiles':[]}
+    data.update({'firstLayout':'MonsterCreator','gdVersion':{'major':5,'minor':6,'build':269,'revision':0},'resources':{'resources':resources,'resourceFolders':[]},'objects':[],'objectsGroups':[],'externalEvents':[],'externalLayouts':[],'eventsFunctionsExtensions':[],'externalSourceFiles':[]})
     (folder/'game.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
     (folder/'START_HERE.txt').write_text('MONSTER PROTOCOL\nОткройте game.json в настольном GDevelop 5.6.269 или новее.\nПереносите ВСЮ папку проекта вместе с assets.\n'+('Это стартовый шаблон: игровую логику дети добавляют на уроках.\n' if starter else 'Это готовый образец результата курса.\n')+'План занятий и точные события находятся в папке docs основного комплекта.\n',encoding='utf-8')
 if __name__=='__main__':

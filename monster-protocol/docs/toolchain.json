@@ -5,5 +5,6 @@
   "gdcoreTools": "2.0.0-gd-v5.6.269-autobuild",
   "tensorflow": "1.3.1",
   "teachableMachine": "0.8.5",
-  "playwright": "1.56.1"
+  "playwright": "1.56.1",
+  "gameVersion": "2.0.0"
 }

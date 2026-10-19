@@ -2,6 +2,12 @@
   "passed": true,
   "checks": [
     "native-scenes",
+    "idle-animation",
+    "music-playback-and-mute",
+    "pet-reaction",
+    "three-distinct-rivals",
+    "animated-counterattack",
+    "home-upgrades-and-trophies",
     "10-selectors",
     "paired-eyes",
     "save-reload",
@@ -14,11 +20,25 @@
     "real-camera-pixels-to-game-command",
     "command-gate",
     "student-template",
-    "laptop-resolution"
+    "laptop-resolution",
+    "empowered-counterattack",
+    "completed-campaign-cannot-enter-round-four"
   ],
   "pageErrors": [],
   "failedResources": [],
   "externalRequests": [],
+  "version": "2.0.0",
+  "studentAssisted": {
+    "passed": true,
+    "checks": [
+      "native-student-button-events",
+      "supplied-scaffold",
+      "busy-click-lock",
+      "empowered-warning",
+      "shield-caps-damage-at-3",
+      "reward-and-finale"
+    ]
+  },
   "packagedDemo": {
     "passed": true,
     "checks": [
