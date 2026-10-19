@@ -1,0 +1,5 @@
+# Preserve upstream bundles/notices byte-for-byte; their formatting is upstream.
+/demo/assets/*.js linguist-vendored -diff -whitespace
+/student-template/assets/*.js linguist-vendored -diff -whitespace
+/licenses/** linguist-vendored -whitespace
+/downloads/*.zip binary

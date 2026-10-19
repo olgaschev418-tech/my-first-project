@@ -1,5 +1,15 @@
 # Мои проекты
 
+## AI GAME LAB — MONSTER PROTOCOL на GDevelop
+
+Новый курс для детей 8–10 лет: сборка собственного монстра из частей, лаборатория, арена и команды камеры через Teachable Machine. **12 занятий по 45 минут.**
+
+- [Готовая игра для показа](monster-protocol/downloads/Monster_Protocol_Demo.zip).
+- [Шаблон для учеников](monster-protocol/downloads/Monster_Protocol_Student.zip).
+- [Полный комплект преподавателя](monster-protocol/downloads/Monster_Protocol_Teacher.zip).
+- [Подробный план занятий](monster-protocol/docs/LESSONS_RU.md).
+- [Как открыть проекты и провести курс](monster-protocol/README.md).
+
 ## MONSTER AI LAB — Академия монстров
 
 Игра на Scratch 3 для курса детям 8–12 лет: питомец, тренировки, арена,

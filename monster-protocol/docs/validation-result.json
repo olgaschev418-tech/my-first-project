@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "checks": [
+    "native-scenes",
+    "10-selectors",
+    "paired-eyes",
+    "save-reload",
+    "training",
+    "campaign",
+    "failure-recovery",
+    "real-neural-inference",
+    "model-import",
+    "fake-webcam",
+    "real-camera-pixels-to-game-command",
+    "command-gate",
+    "student-template",
+    "laptop-resolution"
+  ],
+  "pageErrors": [],
+  "failedResources": [],
+  "externalRequests": [],
+  "packagedDemo": {
+    "passed": true,
+    "checks": [
+      "extracted-archive",
+      "shipped-python-launcher",
+      "native-controls",
+      "native-scene-transitions",
+      "bundled-neural-inference"
+    ]
+  }
+}
