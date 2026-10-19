@@ -88,6 +88,35 @@ def art(folder):
     for x in range(60,2560,72):
         for y in range(60,1600,72):d.ellipse((x,y,x+2,y+2),fill='#534563')
     save(im,'background.png')
+    # Finished illustration assets: students edit ordinary sprites/events.
+    for name,accent in [('habitat',MINT),('arena',LILAC)]:
+        im,d=canvas((540,469));el,rect,poly,line=shapes(d)
+        rect((1,1,539,468),'#25233e',24,outline='#625777',w=2)
+        el((70,48,470,430),'#303951',outline='#303951',w=0)
+        if name=='habitat':
+            rect((135,55,405,260),'#15243c',55,outline='#8199ad',w=5)
+            el((319,83,361,125),'#baf5d2',outline='#baf5d2',w=0)
+            poly([(143,236),(208,143),(250,201),(310,137),(399,238)],'#3c6875',outline='#3c6875',w=0)
+            line([(270,57),(270,260)],'#8199ad',w=4);line([(135,155),(405,155)],'#8199ad',w=4)
+            rect((16,213,105,226),'#80768f',4)
+            for x,c in [(30,MINT),(58,LILAC),(85,PEACH)]:
+                rect((x,174,x+14,211),c,5,outline=c,w=0)
+        else:
+            for x in [53,469]:
+                rect((x,86,x+18,310),'#55506f',6)
+                poly([(x+9,54),(x-5,86),(x+9,111),(x+23,86)],accent,outline=accent,w=0)
+            poly([(105,280),(163,177),(219,250),(305,168),(439,282)],'#4e506f',outline='#4e506f',w=0)
+        el((80,330,460,421),'#132235',outline='#132235',w=0)
+        el((80,317,460,400),'#405368',outline=accent,w=3)
+        el((110,329,430,386),'#314458',outline='#829ca5',w=1)
+        save(im,name+'.png')
+    for i in range(3):
+        im=Image.new('RGBA',(256,256))
+        for cat,index in [('Wings',0 if i==0 else 1+i),('Legs',i),('Arms',i),('Body',[4,3,5][i]),('Horns',0 if i==0 else i),('Mouth',i)]:
+            im.alpha_composite(Image.open(folder/f'{cat.lower()}-{index}.png').convert('RGBA'))
+        eye=Image.open(folder/f'eyes-{i+1}.png').convert('RGBA').resize((41,41),Image.Resampling.LANCZOS)
+        im.alpha_composite(eye,(94,93));im.alpha_composite(eye,(134,93))
+        im.save(folder/f'rival-{i}.png')
 
 def ins(t,*p):return {'type':{'value':t,'inverted':False},'parameters':list(p),'subInstructions':[]}
 def ev(conditions=(),actions=(),events=()):return {'type':'BuiltinCommonInstructions::Standard','disabled':False,'folded':False,'conditions':list(conditions),'actions':list(actions),'events':list(events)}
@@ -110,7 +139,7 @@ class Scene:
         self.data={'name':name,'mangledName':name,'r':22,'v':18,'b':34,'title':title,'stopSoundsOnStartup':True,'standardSortMethod':True,'disableInputWhenNotFocused':True,'objects':[],'objectsGroups':[],'instances':[],'variables':[variable('Command',0),variable('TakenTurn',0),variable('Damage',0)],'events':[],'layers':[{'name':'','visibility':True,'cameras':[{'defaultSize':True,'defaultViewport':True,'width':0,'height':0,'viewportLeft':0,'viewportTop':0,'viewportRight':1,'viewportBottom':1}],'effects':[]}],'behaviorsSharedData':[],'uiSettings':{'grid':False,'snap':False,'windowMask':True,'zoomFactor':0.7}}
         self.sprite('Backdrop',['background.png'],0,0,1280,800,0)
         self.text('Brand','MONSTER / PROTOCOL',52,28,23,MINT,True)
-        self.text('Edition','AI GAME LAB    /    GDEVELOP',912,34,16,'#b7a8ca')
+        self.text('Edition','AI GAME LAB  /  GDEVELOP 1.1',912,34,16,'#b7a8ca')
         self.text('Title',title,52,86,42,WHITE,True)
         self.text('Kicker',kicker,54,143,18,'#b7a8ca')
     def sprite(self,n,files,x,y,w,h,z=3):
@@ -159,7 +188,7 @@ def project(folder,starter=False):
     s.add(ev(click('Rename'),[S('NamePanel',1)]),ev(click('Save'),[S('SaveRequest',1)]),ev(click('Load'),[S('LoadRequest',1)]),ev(actions=[textset('NameText','GlobalVariableString(Name)')]))
     scenes.append(s)
     for scene,title,kicker in [('Lab','Забота делает сильнее.','02 / ЛАБОРАТОРИЯ     •     Сначала ресурсы и тренировки, затем арена.'),('Arena','Сила. Тактика. Твой ход.','03 / АРЕНА     •     Атака тратит энергию. Щит помогает восстановиться.'),('Final','Маленький монстр. Большая победа.','04 / ФИНАЛ     •     Три соперника позади. Твой проект готов к показу.')]:
-        s=Scene(scene,title,kicker);s.sprite('PortraitPanel',['panel.png'],50,197,540,433,1);s.monster(155,216,350)
+        s=Scene(scene,title,kicker);s.sprite('PortraitPanel',['arena.png' if scene=='Arena' else 'habitat.png'],50,197,540,433,1);s.monster(155,216,350)
         s.text('NameText','Искрик',100,570,30,MINT,True);s.add(ev(actions=[textset('NameText','GlobalVariableString(Name)')]))
         s.text('Message','',55,650,19,'#cabbdf');s.add(ev(actions=[textset('Message','GlobalVariableString(Message)')]))
         s.button('Creator','← Конструктор',52,690,250,'lilac');s.button('Camera','ИИ / камера',924,690,304,'mint')
@@ -173,9 +202,10 @@ def project(folder,starter=False):
             if not starter:
                 s.add(ev(click('Feed'),[S('Energy',f'min(100,{G("Energy")}+20)'),say('Энергия восстановлена. Максимум — 100.')]),ev(click('Rest'),[S('Energy',100),S('Health',100),say('Отдохнули! Здоровье и энергия восстановлены.')]),ev(click('Train')+[C('Energy','>=',20)],[S('Energy',G('Energy')+'-20'),S('Strength',f'min(30,{G("Strength")}+4)'),S('XP',G('XP')+'+1'),S('Level',f'1+floor({G("XP")}/3)'),say('Тренировка: +4 силы, −20 энергии. Каждые 3 тренировки — уровень.')]),ev(click('Train')+[C('Energy','<',20)],[say('Нужно 20 энергии. Покорми монстра или отдохни.')]),ev(click('Battle'),[S('Round',G('Wins')+'+1'),S('EnemyHP','40+20*GlobalVariable(Round)'),say('Твой ход. Команды работают кнопками и через обученную камеру.'),go('Arena')]))
         if scene=='Arena':
-            s.sprite('EnemyPanel',['panel.png'],615,197,615,433,1)
+            s.sprite('EnemyPanel',['arena.png'],615,197,615,433,1)
             # Rival is a single composed silhouette, distinct from editable player's parts.
-            s.sprite('Rival',['body-1.png'],840,245,260,260,5);s.sprite('RivalEyes',['eyes-1.png'],930,344,55,55,8);s.sprite('RivalMouth',['mouth-3.png'],840,245,260,260,9)
+            s.sprite('Rival',['rival-0.png','rival-1.png','rival-2.png'],790,235,340,340,5)
+            s.add(ev(actions=[ins('ChangeAnimation','Rival','=',G('Round')+'-1'),textset('EnemyTitle','"СОПЕРНИК " + ToString(GlobalVariable(Round)) + " / 3"')]))
             s.text('EnemyTitle','УЧЕБНЫЙ СПАРРИНГ',647,220,20,PEACH,True);s.text('CombatStats','',647,542,23,WHITE)
             s.add(ev(actions=[textset('CombatStats','"Раунд " + ToString(GlobalVariable(Round)) + " / 3     Соперник: " + ToString(GlobalVariable(EnemyHP)) + " HP\\nТы: " + ToString(GlobalVariable(Health)) + " HP     Энергия: " + ToString(GlobalVariable(Energy))')]))
             s.button('Attack','Атака  −10',630,615,185,'peach');s.button('Shield','Щит  +14',827,615,180,'lilac');s.button('Heal','Лечение −20',1019,615,210,'mint');s.button('Retreat','В лабораторию',329,690,267,'lilac')
@@ -198,7 +228,7 @@ def project(folder,starter=False):
                 index=events.index(a);events.remove(b);events.insert(index,b)
     bridge=(ROOT/'teacher/bridge.js').read_text()
     for s in scenes:
-        s.add(group('99 · Служебный адаптер преподавателя: имя, локальное сохранение, Teachable Machine',[js(bridge)]))
+        s.add(group('99 · Готовый модуль преподавателя: имя, сохранение, камера, визуальные эффекты',[js(bridge)]))
     resources=[]
     for f in sorted(assets.iterdir()):
         if f.suffix not in ('.png','.ttf'):continue

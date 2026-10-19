@@ -18,15 +18,5 @@
   ],
   "pageErrors": [],
   "failedResources": [],
-  "externalRequests": [],
-  "packagedDemo": {
-    "passed": true,
-    "checks": [
-      "extracted-archive",
-      "shipped-python-launcher",
-      "native-controls",
-      "native-scene-transitions",
-      "bundled-neural-inference"
-    ]
-  }
+  "externalRequests": []
 }

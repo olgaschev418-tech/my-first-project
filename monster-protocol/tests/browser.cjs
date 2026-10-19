@@ -35,7 +35,8 @@ const base=process.env.PROTOCOL_URL||'http://127.0.0.1:8010';
   const before=await value('EnemyHP');await click('Shield');assert.equal(await value('Health'),97);assert.equal(await value('EnemyHP'),before);
   await page.screenshot({path:'test-results/03-arena.png'});
   // Real local neural model, real TM inference on image tensors and fake webcam.
-  await click('Camera');await page.locator('#mp-demo').click();await page.waitForFunction(()=>!!MonsterProtocol.getModel());
+  await click('Camera');await page.locator('#mp-start').click();await page.waitForFunction(()=>!!MonsterProtocol.getModel());
+  await page.waitForSelector('#mp-video');await page.locator('#mp-stop').click();
   const predictions=await page.evaluate(async()=>{
    const out=[];const c=document.createElement('canvas');c.width=c.height=224;const ctx=c.getContext('2d');
    for(const color of ['#ff0000','#0000ff','#00ff00','#7f7f7f']){ctx.fillStyle=color;ctx.fillRect(0,0,224,224);const p=await MonsterProtocol.getModel().predict(c);out.push(p.reduce((a,b)=>a.probability>b.probability?a:b));}return out;
@@ -47,7 +48,12 @@ const base=process.env.PROTOCOL_URL||'http://127.0.0.1:8010';
   const tracks=await page.evaluate(()=>{globalThis.testCameraStream=document.getElementById('mp-video').srcObject;return testCameraStream.getVideoTracks().length;});assert.equal(tracks,1);
   await page.locator('#mp-stop').click();assert.equal(await page.evaluate(()=>testCameraStream.getTracks().every(t=>t.readyState==='ended')),true);
   // Import a genuine three-file TF.js/TM export, not a mock network response.
-  await page.locator('#mp-model-files').setInputFiles(['teacher/demo-model/model.json','teacher/demo-model/metadata.json','teacher/demo-model/weights.bin']);
+  await page.locator('#mp-model-files').setInputFiles('teacher/demo-model/model.json');
+  await page.waitForFunction(()=>document.getElementById('mp-status').textContent.includes('metadata.json'));
+  assert((await page.locator('#mp-selected-files').textContent()).includes('model.json'));
+  await page.locator('#mp-model-files').setInputFiles('teacher/demo-model/metadata.json');
+  await page.waitForFunction(()=>document.getElementById('mp-status').textContent.includes('weights.bin'));
+  await page.locator('#mp-model-files').setInputFiles('teacher/demo-model/weights.bin');
   await page.waitForFunction(()=>document.getElementById('mp-status').textContent.includes('Модель готова'));
   // Feed a synthetic camera stream into the SAME real model/adapter/game pipeline.
   // This controls image pixels, never the predicted class or gameplay variables.
