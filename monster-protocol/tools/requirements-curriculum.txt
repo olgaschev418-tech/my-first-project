@@ -1,0 +1,2 @@
+# Only needed to rebuild editable curriculum documents.
+python-docx==1.2.0
