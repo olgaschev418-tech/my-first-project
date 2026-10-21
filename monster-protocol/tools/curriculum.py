@@ -64,6 +64,13 @@ def make_doc(source,target,subtitle,page_cards=False):
                     inline(cell.paragraphs[0],text)
                     for run in cell.paragraphs[0].runs:run.font.size=Pt(9);run.bold=ri==0 or run.bold
                 trpr=cells[0]._tc.getparent().get_or_add_trPr();trpr.append(OxmlElement('w:cantSplit'))
+            if rows[0][0] in ('Минута','Время'):
+                widths=[1.3,2.4,7.4,6.3] if len(rows[0])==4 else [1.4,10,6] if len(rows[0])==3 else None
+                if widths:
+                    table.autofit=False
+                    for column,width in zip(table.columns,widths):column.width=Cm(width)
+                    for row in table.rows:
+                        for cell,width in zip(row.cells,widths):cell.width=Cm(width)
             table.rows[0]._tr.get_or_add_trPr().append(OxmlElement('w:tblHeader'))
             doc.add_paragraph();continue
         match=re.match(r'^(#{1,4})\s+(.*)',line)
@@ -77,6 +84,7 @@ def make_doc(source,target,subtitle,page_cards=False):
                     if page_cards and card_count>0:p.paragraph_format.page_break_before=True
                     if source=='LESSONS_RU.md':p.paragraph_format.page_break_before=True
                     card_count+=1
+            if source=='CLICK_BY_CLICK_RU.md' and depth==2 and title.startswith('Занятие '):p.paragraph_format.page_break_before=True
             i+=1;continue
         if re.match(r'^- \[[ x]\] ',line):p=doc.add_paragraph();inline(p,'☐ '+line[6:])
         elif line.startswith('- '):p=doc.add_paragraph(style='List Bullet');inline(p,line[2:])
@@ -89,6 +97,8 @@ def make_doc(source,target,subtitle,page_cards=False):
 def build():
     OUT.mkdir(exist_ok=True)
     specs=[
+        ('FIRST_LESSON_CLICKS_RU.md','AI_GAME_Lesson_01_Click_by_Click_RU.docx','Первое занятие · все 90 минут · приложения, нажатия и проверки',False),
+        ('CLICK_BY_CLICK_RU.md','AI_GAME_All_8_Lessons_Click_by_Click_RU.docx','Все восемь встреч · маршруты действий и сценарии преподавателя',False),
         ('LESSONS_RU.md','AI_GAME_8x90_Teacher_Plan_RU.docx','Подробный план преподавателя · два блока по четыре встречи',False),
         ('OFFSCREEN_GAMES_RU.md','AI_GAME_8x90_Activity_Cards_RU.docx','Восемь 15-минутных игр · правила и роли · карточки для печати',True),
         ('YEAR_PLAN_RU.md','AI_GAME_Year_Plan_RU.docx','Предложение модульной программы · 32 или 36 встреч',False),
@@ -97,7 +107,9 @@ def build():
     for source,target,subtitle,pages in specs:make_doc(source,target,subtitle,pages)
     readme='''# Учебный комплект AI GAME · 8 × 90 минут
 
-- AI_GAME_8x90_Teacher_Plan_RU.docx — подробный план преподавателя.
+- AI_GAME_Lesson_01_Click_by_Click_RU.docx — первое занятие: 90 строк по одной минуте, все нажатия.
+- AI_GAME_All_8_Lessons_Click_by_Click_RU.docx — сценарии всех встреч и карты действий в редакторе.
+- AI_GAME_8x90_Teacher_Plan_RU.docx — общий методический план преподавателя.
 - AI_GAME_8x90_Activity_Cards_RU.docx — восемь игр без компьютера.
 - AI_GAME_Year_Plan_RU.docx — идея модульной программы на год.
 - AI_GAME_8x90_Student_Passport_RU.docx — карточки ученика.
@@ -112,12 +124,12 @@ def build():
         prefix='AI_GAME_8x90_RU/'
         z.writestr(prefix+'README.md',readme)
         for _,name,_,_ in specs:z.write(OUT/name,prefix+name)
-        for name in ['LESSONS_RU.md','OFFSCREEN_GAMES_RU.md','YEAR_PLAN_RU.md','STUDENT_CARDS_RU.md','TEACHER_START_RU.md','EVENTS_RU.md','AI_RU.md']:
+        for name in ['FIRST_LESSON_CLICKS_RU.md','CLICK_BY_CLICK_RU.md','LESSONS_RU.md','OFFSCREEN_GAMES_RU.md','YEAR_PLAN_RU.md','STUDENT_CARDS_RU.md','TEACHER_START_RU.md','EVENTS_RU.md','AI_RU.md']:
             z.write(ROOT/'docs'/name,prefix+'docs/'+name)
     with zipfile.ZipFile(target) as z:assert z.testzip() is None
     checksum=hashlib.sha256(target.read_bytes()).hexdigest()
     (OUT/'AI_GAME_Curriculum_8x90_RU.sha256').write_text(checksum+'  '+target.name+'\n')
-    print(f'Built four Word documents and {target.name} ({target.stat().st_size:,} bytes); CRC OK.')
+    print(f'Built six Word documents and {target.name} ({target.stat().st_size:,} bytes); CRC OK.')
 
 
 if __name__=='__main__':build()

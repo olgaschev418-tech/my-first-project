@@ -7,6 +7,8 @@
 - [Готовая игра для показа](monster-protocol/downloads/Monster_Protocol_Demo_v2_1_0.zip).
 - [Шаблон для учеников](monster-protocol/downloads/Monster_Protocol_Student.zip).
 - [Полный комплект преподавателя](monster-protocol/downloads/Monster_Protocol_Teacher.zip).
+- [Первое занятие по минутам и кнопкам](monster-protocol/docs/FIRST_LESSON_CLICKS_RU.md).
+- [Все восемь встреч: пошаговые действия](monster-protocol/docs/CLICK_BY_CLICK_RU.md).
 - [Подробный план 8 × 90 минут](monster-protocol/docs/LESSONS_RU.md).
 - [Идея модульной программы на год](monster-protocol/docs/YEAR_PLAN_RU.md).
 - [Учебный комплект в Word](monster-protocol/downloads/AI_GAME_Curriculum_8x90_RU.zip).
